@@ -803,34 +803,135 @@ app.post(
     async (req, res) => {
 
         const bookId =
-            String(
-                req.body.book_id || ""
-            ).trim();
-
-        const nickname =
-            String(
-                req.body.nickname || ""
-            ).trim();
+            String(req.body.book_id || "").trim();
 
         const content =
-            String(
-                req.body.content || ""
-            ).trim();
+            String(req.body.content || "").trim();
 
 
-        if (
-            !bookId ||
-            !nickname ||
-            !content
-        ) {
+        // 메시지 내용 확인
+
+        if (!bookId) {
 
             return res.status(400).json({
-
                 success: false,
-
-                error:
-                    "필수 정보가 없습니다."
+                error: "책 정보가 없습니다."
             });
+
+        }
+
+
+        if (!content) {
+
+            return res.status(400).json({
+                success: false,
+                error: "메시지를 입력해주세요."
+            });
+
+        }
+
+
+        if (content.length > 500) {
+
+            return res.status(400).json({
+                success: false,
+                error:
+                    "메시지는 500자 이하로 작성해주세요."
+            });
+
+        }
+
+
+        try {
+
+            // 현재 로그인한 사람 확인
+
+            const user =
+                await getCurrentUser(req);
+
+
+            if (!user) {
+
+                return res.status(401).json({
+                    success: false,
+                    error:
+                        "로그인이 필요합니다."
+                });
+
+            }
+
+
+            // 로그인한 사람의 닉네임 가져오기
+
+            const nickname =
+                String(
+                    user.user_metadata?.nickname ||
+                    "사용자"
+                ).trim();
+
+
+            // DB에 메시지 저장
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .from("messages")
+                    .insert([
+                        {
+                            book_id: bookId,
+                            nickname: nickname,
+                            content: content
+                        }
+                    ])
+                    .select()
+                    .single();
+
+
+            if (error) {
+
+                console.error(
+                    "❌ 메시지 저장 오류:",
+                    error.message
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    error:
+                        "메시지를 저장하지 못했습니다."
+                });
+
+            }
+
+
+            return res.status(201).json({
+
+                success: true,
+
+                message: data
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "❌ 메시지 서버 오류:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    "메시지 저장 중 서버 오류가 발생했습니다."
+            });
+
+        }
+
+    }
+);
+
         }
 
 
