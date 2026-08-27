@@ -214,7 +214,7 @@ async function getCurrentUser(req) {
    홈페이지
 ======================================== */
 
-app.get("/", async (req, res) => {
+app.get("/"), async (req, res) => {
 
     try {
 
