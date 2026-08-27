@@ -214,14 +214,29 @@ async function getCurrentUser(req) {
    홈페이지
 ======================================== */
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
 
-    res.sendFile(
+    const user =
+        await getCurrentUser(req);
+
+    if (!user) {
+
+        return res.sendFile(
+            path.join(
+                __dirname,
+                "login.html"
+            )
+        );
+
+    }
+
+    return res.sendFile(
         path.join(
             __dirname,
             "index.html"
         )
     );
+
 });
 
 
