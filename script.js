@@ -789,93 +789,7 @@ async function setupRealtimeChat() {
                 });
 
 
-        /*
-            페이지를 나가면 연결 정리
-        */
-
-        window.addEventListener(
-            "beforeunload",
-            () => {
-
-                realtimeClient.removeChannel(
-                    channel
-                );
-
-            }
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "❌ Realtime 연결 오류:",
-            error
-        );
-
-    }
-
-}
-async function loadCurrentUser() {
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/auth/me",
-                {
-                    credentials: "include",
-                    cache: "no-store"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            console.log(
-                "로그인된 사용자가 없습니다."
-            );
-
-            return null;
-        }
-
-
-        const result =
-            await response.json();
-
-
-        if (
-            !result.success ||
-            !result.user
-        ) {
-
-            return null;
-        }
-
-
-        window.currentUser =
-            result.user;
-
-
-        console.log(
-            "✅ 현재 사용자:",
-            result.user.nickname
-        );
-
-
-        return result.user;
-
-
-    } catch (error) {
-
-        console.error(
-            "❌ 사용자 정보 오류:",
-            error
-        );
-
-        return null;
-    }
-
-   async function updateHeaderLogin() {
+  async function updateHeaderLogin() {
 
     const headerLogin =
         document.getElementById("headerLogin");
@@ -890,35 +804,49 @@ async function loadCurrentUser() {
             cache: "no-store"
         });
 
+        if (!response.ok) {
+            headerLogin.textContent = "로그인";
+            headerLogin.href = "login.html";
+            return;
+        }
+
         const result = await response.json();
 
         if (
-            response.ok &&
             result.success &&
             result.user
         ) {
 
+            // 로그인 상태
             headerLogin.textContent =
                 `${result.user.nickname}님`;
 
+            // 아직 프로필 페이지가 없으므로
+            // 클릭해도 이동하지 않음
+            headerLogin.removeAttribute("href");
+
+            headerLogin.style.cursor = "default";
+
         } else {
 
+            // 로그아웃 상태
             headerLogin.textContent = "로그인";
+            headerLogin.href = "login.html";
+            headerLogin.style.cursor = "pointer";
 
         }
 
     } catch (error) {
 
-        console.error("로그인 상태 확인 실패:", error);
+        console.error(
+            "로그인 상태 확인 실패:",
+            error
+        );
 
         headerLogin.textContent = "로그인";
+        headerLogin.href = "login.html";
+        headerLogin.style.cursor = "pointer";
 
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    updateHeaderLogin();
-
-});
   
