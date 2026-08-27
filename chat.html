@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>책방</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =========================
+         Header
+    ========================== -->
+
+    <header class="site-header">
+
+        <a
+            href="index.html"
+            class="logo"
+        >
+            📚 책방
+        </a>
+
+        <p class="header-description">
+            책을 좋아하는 사람들이 모이는 공간
+        </p>
+
+    </header>
+
+
+    <!-- =========================
+         Main
+    ========================== -->
+
+    <main class="chat-main">
+
+
+        <!-- 뒤로가기 -->
+
+        <button
+            type="button"
+            class="back-button"
+            onclick="location.href='index.html'"
+        >
+            ← 책 목록
+        </button>
+
+
+        <!-- 책 정보 -->
+
+        <section class="chat-book-info">
+
+            <div
+                class="chat-book-cover"
+                id="chatBookCover"
+            ></div>
+
+
+            <div class="chat-book-text">
+
+                <p
+                    class="chat-book-label"
+                    id="chatBookAuthor"
+                ></p>
+
+                <h1
+                    id="chatBookTitle"
+                >
+                    책방
+                </h1>
+
+                <p>
+                    이 책에 대해 자유롭게 이야기해보세요.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             Chat
+        ========================== -->
+
+        <section class="chat-container">
+
+            <!-- 메시지가 들어가는 곳 -->
+
+            <div
+                class="messages"
+                id="messages"
+            ></div>
+
+
+            <!-- 입력창 -->
+
+            <form
+                class="chat-input"
+                id="chatForm"
+            >
+
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="메시지를 입력하세요..."
+                    autocomplete="off"
+                    maxlength="500"
+                >
+
+                <button
+                    type="submit"
+                >
+                    전송
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
+
+
+    
