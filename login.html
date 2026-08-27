@@ -3,6 +3,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
@@ -27,7 +28,10 @@
                 책방에 들어오세요
             </h1>
 
-            <p class="auth-description" id="authDescription">
+            <p
+                class="auth-description"
+                id="authDescription"
+            >
                 로그인하고 사람들과 책 이야기를 나눠보세요.
             </p>
 
@@ -40,6 +44,7 @@
                     id="loginEmail"
                     type="email"
                     placeholder="이메일"
+                    autocomplete="email"
                     required
                 >
 
@@ -47,6 +52,7 @@
                     id="loginPassword"
                     type="password"
                     placeholder="비밀번호"
+                    autocomplete="current-password"
                     required
                 >
 
@@ -68,13 +74,15 @@
                     id="signupEmail"
                     type="email"
                     placeholder="이메일"
+                    autocomplete="email"
                     required
                 >
 
                 <input
                     id="signupPassword"
                     type="password"
-                    placeholder="비밀번호"
+                    placeholder="비밀번호 (6자 이상)"
+                    autocomplete="new-password"
                     minlength="6"
                     required
                 >
@@ -82,7 +90,9 @@
                 <input
                     id="signupNickname"
                     type="text"
-                    placeholder="닉네임"
+                    placeholder="닉네임 (2~20자)"
+                    autocomplete="nickname"
+                    minlength="2"
                     maxlength="20"
                     required
                 >
@@ -97,6 +107,7 @@
             <p
                 id="authMessage"
                 class="auth-message"
+                aria-live="polite"
             ></p>
 
 
@@ -113,8 +124,7 @@
     </main>
 
 
-    <!-- Supabase -->
-
+    <!-- Supabase CDN 없음 -->
     <script src="auth.js"></script>
 
 </body>
