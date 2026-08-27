@@ -874,110 +874,51 @@ async function loadCurrentUser() {
 
         return null;
     }
-   /* ========================================
-   HEADER 로그인 상태
-======================================== */
 
-async function updateHeaderLogin() {
+   async function updateHeaderLogin() {
 
-    const loginButton =
+    const headerLogin =
         document.getElementById("headerLogin");
 
-    if (!loginButton) {
-        return;
-    }
+    if (!headerLogin) return;
 
     try {
 
-        const response =
-            await fetch("/api/auth/me", {
-                method: "GET",
-                credentials: "same-origin",
-                cache: "no-store"
-            });
+        const response = await fetch("/api/auth/me", {
+            method: "GET",
+            credentials: "same-origin",
+            cache: "no-store"
+        });
 
-        if (!response.ok) {
-            loginButton.textContent = "로그인";
-            loginButton.href = "login.html";
-            return;
-        }
-
-        const result =
-            await response.json();
-
-        /* 로그인 상태 */
+        const result = await response.json();
 
         if (
+            response.ok &&
             result.success &&
             result.user
         ) {
 
-            loginButton.textContent =
+            headerLogin.textContent =
                 `${result.user.nickname}님`;
 
-            /*
-               로그인한 상태에서는
-               프로필 페이지로 연결할 수 있음.
-               아직 프로필 페이지가 없다면
-               일단 로그인 페이지로 유지.
-            */
+        } else {
 
-            loginButton.href = "login.html";
+            headerLogin.textContent = "로그인";
 
         }
 
-        /* 로그인하지 않은 상태 */
+    } catch (error) {
 
-        else {
+        console.error("로그인 상태 확인 실패:", error);
 
-            loginButton.textContent =
-                "로그인";
-
-            loginButton.href =
-                "login.html";
-
-        }
+        headerLogin.textContent = "로그인";
 
     }
-
-    catch (error) {
-
-        console.error(
-            "❌ 헤더 로그인 상태 확인 오류:",
-            error
-        );
-
-        loginButton.textContent =
-            "로그인";
-
-        loginButton.href =
-            "login.html";
-
-    }
-
 }
 
+document.addEventListener("DOMContentLoaded", () => {
 
-/* ========================================
-   시작
-======================================== */
+    updateHeaderLogin();
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-
-        /*
-           기존 책 목록 불러오기
-        */
-        // 기존에 있던 코드가 있다면
-        // 그대로 유지하면 됨.
-
-
-        /*
-           헤더 로그인 상태 확인
-        */
-        await updateHeaderLogin();
-
-    }
-);
-}
+});
+  
