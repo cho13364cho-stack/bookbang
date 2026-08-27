@@ -1,8 +1,7 @@
-
 /* ========================================
    📚 책방
    Minimal Editorial Design
-   Compact Modern Version
+   Compact Version
 ======================================== */
 
 * {
@@ -77,17 +76,17 @@ img {
     z-index: 100;
 
     width: 100%;
-    height: 66px;
+    height: 62px;
 
-    padding: 0 6vw;
+    padding: 0 5.5vw;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    background: rgba(250, 250, 249, 0.9);
+    background: rgba(250, 250, 249, 0.92);
 
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.055);
 
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -98,7 +97,7 @@ img {
 
     text-decoration: none;
 
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 750;
 
     letter-spacing: -0.8px;
@@ -110,10 +109,61 @@ img {
     opacity: 0.55;
 }
 
+
+/* ========================================
+   HEADER RIGHT
+======================================== */
+
+.header-right {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+}
+
 .header-description {
     color: var(--gray-3);
 
-    font-size: 11px;
+    font-size: 10px;
+}
+
+.login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 32px;
+
+    padding: 0 13px;
+
+    border: 1px solid #deded9;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: var(--black);
+
+    font-size: 10px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.login-button:hover {
+    background: #f3f3f0;
+
+    border-color: #cecec9;
+}
+
+.login-button:active {
+    transform: scale(0.97);
 }
 
 
@@ -127,7 +177,7 @@ img {
 
     margin: 0 auto;
 
-    padding: 86px 28px 100px;
+    padding: 88px 28px 100px;
 }
 
 
@@ -136,7 +186,7 @@ img {
 ======================================== */
 
 .hero {
-    margin-bottom: 72px;
+    margin-bottom: 76px;
 }
 
 .hero-label {
@@ -147,7 +197,7 @@ img {
     font-size: 9px;
     font-weight: 700;
 
-    letter-spacing: 2.6px;
+    letter-spacing: 2.5px;
 }
 
 .hero h1 {
@@ -155,19 +205,22 @@ img {
 
     color: var(--black);
 
-    font-size: 44px;
+    font-size: 43px;
     font-weight: 750;
 
     line-height: 1.25;
+
     letter-spacing: -2.5px;
 }
 
 .hero-description {
     color: var(--gray-2);
 
-    font-size: 13px;
+    font-size: 12px;
 
-    line-height: 1.75;
+    line-height: 1.8;
+
+    letter-spacing: -0.1px;
 }
 
 
@@ -191,10 +244,10 @@ img {
 .section-header h2 {
     color: var(--black);
 
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
 
-    letter-spacing: -0.4px;
+    letter-spacing: -0.3px;
 }
 
 .section-header span {
@@ -214,7 +267,7 @@ img {
     grid-template-columns:
         repeat(4, minmax(0, 1fr));
 
-    gap: 14px;
+    gap: 15px;
 }
 
 
@@ -245,7 +298,7 @@ img {
     border-color: #dcdcd8;
 
     box-shadow:
-        0 14px 35px rgba(0, 0, 0, 0.065);
+        0 15px 38px rgba(0, 0, 0, 0.065);
 }
 
 
@@ -294,12 +347,12 @@ img {
     font-size: 14px;
     font-weight: 700;
 
-    line-height: 1.35;
-
-    letter-spacing: -0.4px;
+    line-height: 1.4;
 
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
 }
 
@@ -313,7 +366,9 @@ img {
     font-size: 10px;
 
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
 }
 
@@ -327,6 +382,7 @@ img {
     height: 36px;
 
     border: none;
+
     border-radius: 7px;
 
     background: var(--black);
@@ -361,7 +417,7 @@ img {
 
     margin: 0 auto;
 
-    padding: 40px 26px 80px;
+    padding: 40px 28px 85px;
 }
 
 
@@ -381,11 +437,12 @@ img {
 
     color: var(--gray-2);
 
-    font-size: 11px;
+    font-size: 10px;
 
     cursor: pointer;
 
-    transition: color 0.2s ease;
+    transition:
+        color 0.2s ease;
 }
 
 .back-button:hover {
@@ -407,8 +464,8 @@ img {
 }
 
 .chat-book-cover {
-    width: 66px;
-    height: 99px;
+    width: 64px;
+    height: 96px;
 
     flex-shrink: 0;
 
@@ -419,7 +476,7 @@ img {
     border-radius: 7px;
 
     box-shadow:
-        0 7px 18px rgba(0, 0, 0, 0.075);
+        0 7px 18px rgba(0, 0, 0, 0.07);
 }
 
 .chat-book-cover img {
@@ -434,22 +491,22 @@ img {
 }
 
 .chat-book-label {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 
     color: var(--gray-3) !important;
 
     font-size: 9px !important;
     font-weight: 700 !important;
 
-    letter-spacing: 1.8px;
+    letter-spacing: 1.7px;
 }
 
 .chat-book-text h1 {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 
     color: var(--black);
 
-    font-size: 29px;
+    font-size: 28px;
     font-weight: 750;
 
     line-height: 1.25;
@@ -462,7 +519,7 @@ img {
 .chat-book-text p {
     color: var(--gray-3);
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
@@ -479,7 +536,7 @@ img {
 
     border: 1px solid #e5e5e2;
 
-    border-radius: 14px;
+    border-radius: 13px;
 
     box-shadow:
         0 13px 40px rgba(0, 0, 0, 0.04);
@@ -498,14 +555,17 @@ img {
     gap: 13px;
 
     width: 100%;
-    height: 450px;
+    height: 440px;
 
-    padding: 22px 22px;
+    padding: 23px 22px;
 
     overflow-y: auto;
 
     scrollbar-width: thin;
-    scrollbar-color: #d4d4d0 transparent;
+
+    scrollbar-color:
+        #d4d4d0
+        transparent;
 }
 
 #messages::-webkit-scrollbar {
@@ -537,7 +597,7 @@ img {
     max-width: 70%;
 
     animation:
-        messageAppear 0.18s ease;
+        messageAppear 0.2s ease;
 }
 
 
@@ -617,7 +677,7 @@ img {
 ======================================== */
 
 .message.mine .message-bubble {
-    background: #181817;
+    background: var(--black);
 
     color: #ffffff;
 
@@ -714,6 +774,7 @@ img {
     color: #ffffff;
 
     font-size: 11px;
+
     font-weight: 600;
 
     cursor: pointer;
@@ -737,9 +798,10 @@ img {
 ======================================== */
 
 .auth-main {
-    min-height: calc(100vh - 66px);
+    min-height: calc(100vh - 62px);
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -750,7 +812,7 @@ img {
     width: 100%;
     max-width: 350px;
 
-    padding: 36px 32px;
+    padding: 35px 31px;
 
     background: #ffffff;
 
@@ -759,15 +821,16 @@ img {
     border-radius: 16px;
 
     box-shadow:
-        0 17px 50px rgba(0, 0, 0, 0.055);
+        0 18px 50px rgba(0, 0, 0, 0.05);
 }
 
 .auth-logo {
-    margin-bottom: 27px;
+    margin-bottom: 26px;
 
     color: var(--black);
 
-    font-size: 20px;
+    font-size: 19px;
+
     font-weight: 750;
 
     letter-spacing: -0.8px;
@@ -778,20 +841,21 @@ img {
 
     color: var(--black);
 
-    font-size: 23px;
+    font-size: 22px;
+
     font-weight: 750;
 
     letter-spacing: -1.2px;
 }
 
 .auth-description {
-    margin-bottom: 24px;
+    margin-bottom: 23px;
 
     color: #999993;
 
-    font-size: 11px;
+    font-size: 10px;
 
-    line-height: 1.65;
+    line-height: 1.7;
 }
 
 
@@ -811,9 +875,10 @@ img {
 #loginForm input,
 #signupForm input {
     width: 100%;
-    height: 43px;
 
-    padding: 0 13px;
+    height: 42px;
+
+    padding: 0 12px;
 
     border: 1px solid #e1e1dd;
 
@@ -826,10 +891,6 @@ img {
     color: var(--black);
 
     font-size: 12px;
-
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease;
 }
 
 #loginForm input:focus,
@@ -852,7 +913,8 @@ img {
 #loginForm button,
 #signupForm button {
     width: 100%;
-    height: 43px;
+
+    height: 42px;
 
     margin-top: 5px;
 
@@ -865,6 +927,7 @@ img {
     color: #ffffff;
 
     font-size: 11px;
+
     font-weight: 600;
 
     cursor: pointer;
@@ -940,15 +1003,15 @@ img {
 
 @media (max-width: 950px) {
 
-    .home-main {
-        max-width: 760px;
-    }
-
     .book-list {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
 
-        gap: 14px;
+        gap: 15px;
+    }
+
+    .home-main {
+        max-width: 760px;
     }
 }
 
@@ -962,17 +1025,31 @@ img {
     /* Header */
 
     .site-header {
-        height: 62px;
+        height: 58px;
 
-        padding: 0 17px;
+        padding: 0 16px;
     }
 
     .logo {
-        font-size: 19px;
+        font-size: 18px;
     }
 
     .header-description {
         display: none;
+    }
+
+    .header-right {
+        gap: 0;
+    }
+
+    .login-button {
+        height: 30px;
+
+        padding: 0 12px;
+
+        border-radius: 7px;
+
+        font-size: 10px;
     }
 
 
@@ -1001,11 +1078,11 @@ img {
     .hero h1 {
         margin-bottom: 15px;
 
-        font-size: 30px;
+        font-size: 29px;
 
         line-height: 1.3;
 
-        letter-spacing: -1.8px;
+        letter-spacing: -1.7px;
     }
 
     .hero-description {
@@ -1018,13 +1095,13 @@ img {
     /* Section */
 
     .section-header {
-        margin-bottom: 15px;
+        margin-bottom: 16px;
 
         padding-bottom: 9px;
     }
 
     .section-header h2 {
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .section-header span {
@@ -1059,12 +1136,10 @@ img {
 
     .book-card h3 {
         font-size: 13px;
-
-        margin-bottom: 3px;
     }
 
     .book-author {
-        margin-bottom: 8px;
+        margin-bottom: 9px;
 
         font-size: 9px;
     }
@@ -1089,7 +1164,7 @@ img {
         gap: 14px;
 
         margin:
-            24px 0 19px;
+            23px 0 18px;
     }
 
     .chat-book-cover {
@@ -1103,16 +1178,14 @@ img {
         margin-bottom: 4px;
 
         font-size: 8px !important;
-
-        letter-spacing: 1.5px;
     }
 
     .chat-book-text h1 {
         margin-bottom: 4px;
 
-        font-size: 24px;
+        font-size: 23px;
 
-        letter-spacing: -1.2px;
+        letter-spacing: -1.1px;
     }
 
     .chat-book-text p {
@@ -1120,17 +1193,14 @@ img {
     }
 
 
-    /* Chat container */
-
-    .chat-container {
-        border-radius: 12px;
-    }
-
-
     /* Messages */
 
+    .chat-container {
+        border-radius: 11px;
+    }
+
     #messages {
-        height: 400px;
+        height: 390px;
 
         padding:
             17px 13px;
@@ -1145,8 +1215,6 @@ img {
     .message-nickname {
         margin-bottom: 3px;
 
-        padding: 0 3px;
-
         font-size: 9px;
     }
 
@@ -1157,8 +1225,6 @@ img {
         border-radius: 14px;
 
         font-size: 11px;
-
-        line-height: 1.5;
     }
 
 
@@ -1182,7 +1248,7 @@ img {
     }
 
     .chat-input button {
-        flex-basis: 57px;
+        flex-basis: 56px;
 
         height: 39px;
 
@@ -1195,7 +1261,7 @@ img {
     /* Auth */
 
     .auth-main {
-        min-height: calc(100vh - 62px);
+        min-height: calc(100vh - 58px);
 
         padding:
             22px 15px;
@@ -1213,11 +1279,11 @@ img {
     .auth-logo {
         margin-bottom: 23px;
 
-        font-size: 19px;
+        font-size: 18px;
     }
 
     .auth-card h1 {
-        font-size: 22px;
+        font-size: 21px;
 
         letter-spacing: -1px;
     }
@@ -1228,23 +1294,16 @@ img {
         font-size: 10px;
     }
 
-    #loginForm,
-    #signupForm {
-        gap: 7px;
-    }
-
     #loginForm input,
     #signupForm input {
-        height: 42px;
+        height: 41px;
 
         font-size: 11px;
     }
 
     #loginForm button,
     #signupForm button {
-        height: 42px;
-
-        font-size: 10px;
+        height: 41px;
     }
 }
 
@@ -1293,11 +1352,11 @@ img {
     }
 
     .chat-book-text h1 {
-        font-size: 22px;
+        font-size: 21px;
     }
 
     #messages {
-        height: 380px;
+        height: 375px;
 
         padding:
             15px 11px;
@@ -1325,7 +1384,6 @@ img {
     *,
     *::before,
     *::after {
-
         animation-duration: 0.01ms !important;
 
         animation-iteration-count: 1 !important;
@@ -1335,4 +1393,3 @@ img {
         scroll-behavior: auto !important;
     }
 }
-
