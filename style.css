@@ -1010,4 +1010,237 @@ img {
         scroll-behavior: auto !important;
     }
 }
+```css id="5k3m2p"
+/* ========================================
+   🔐 AUTH
+======================================== */
+
+.auth-main {
+    min-height: calc(100vh - 72px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px 20px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 390px;
+
+    padding: 42px 38px;
+
+    background: #ffffff;
+
+    border: 1px solid #e7e7e3;
+    border-radius: 18px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.06);
+}
+
+.auth-logo {
+    margin-bottom: 32px;
+
+    color: #181817;
+
+    font-size: 22px;
+    font-weight: 750;
+
+    letter-spacing: -1px;
+}
+
+.auth-card h1 {
+    margin-bottom: 10px;
+
+    color: #181817;
+
+    font-size: 26px;
+    font-weight: 750;
+
+    letter-spacing: -1.5px;
+}
+
+.auth-description {
+    margin-bottom: 28px;
+
+    color: #999993;
+
+    font-size: 12px;
+
+    line-height: 1.7;
+}
+
+#loginForm,
+#signupForm {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+#loginForm input,
+#signupForm input {
+    width: 100%;
+    height: 46px;
+
+    padding: 0 14px;
+
+    border: 1px solid #e1e1dd;
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #fafaf9;
+    color: #181817;
+
+    font-size: 13px;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+#loginForm input:focus,
+#signupForm input:focus {
+    border-color: #aaa9a3;
+
+    background: #ffffff;
+}
+
+#loginForm input::placeholder,
+#signupForm input::placeholder {
+    color: #b0b0aa;
+}
+
+#loginForm button,
+#signupForm button {
+    width: 100%;
+    height: 46px;
+
+    margin-top: 6px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #181817;
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease;
+}
+
+#loginForm button:hover,
+#signupForm button:hover {
+    background: #30302e;
+}
+
+#loginForm button:active,
+#signupForm button:active {
+    transform: scale(0.98);
+}
+
+.auth-message {
+    min-height: 20px;
+
+    margin-top: 15px;
+
+    color: #777772;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+.auth-toggle {
+    display: block;
+
+    margin:
+        18px auto 0;
+
+    padding: 5px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #8d8d87;
+
+    font-size: 11px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease;
+}
+
+.auth-toggle:hover {
+    color: #181817;
+}
+
+
+/* ========================================
+   AUTH MOBILE
+======================================== */
+
+@media (max-width: 550px) {
+
+    .auth-main {
+        min-height: calc(100vh - 64px);
+
+        padding:
+            25px 16px;
+    }
+
+    .auth-card {
+        max-width: 100%;
+
+        padding:
+            34px 24px;
+
+        border-radius: 15px;
+    }
+
+    .auth-logo {
+        margin-bottom: 27px;
+
+        font-size: 20px;
+    }
+
+    .auth-card h1 {
+        font-size: 24px;
+
+        letter-spacing: -1.2px;
+    }
+
+    .auth-description {
+        margin-bottom: 23px;
+
+        font-size: 11px;
+    }
+
+    #loginForm input,
+    #signupForm input {
+        height: 45px;
+
+        font-size: 12px;
+    }
+
+    #loginForm button,
+    #signupForm button {
+        height: 45px;
+    }
+}
+```
+
 ```
