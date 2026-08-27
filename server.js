@@ -932,7 +932,7 @@ app.post(
     }
 );
 
-        }
+    
 
 
         if (content.length > 500) {
