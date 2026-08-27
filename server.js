@@ -216,10 +216,40 @@ async function getCurrentUser(req) {
 
 app.get("/", async (req, res) => {
 
-    const user =
-        await getCurrentUser(req);
+    try {
 
-    if (!user) {
+        const user =
+            await getCurrentUser(req);
+
+
+        // 로그인하지 않은 경우
+        if (!user) {
+
+            return res.sendFile(
+                path.join(
+                    __dirname,
+                    "login.html"
+                )
+            );
+
+        }
+
+
+        // 로그인한 경우
+        return res.sendFile(
+            path.join(
+                __dirname,
+                "index.html"
+            )
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "❌ 홈페이지 접속 오류:",
+            error
+        );
 
         return res.sendFile(
             path.join(
@@ -229,6 +259,8 @@ app.get("/", async (req, res) => {
         );
 
     }
+
+});
 
     return res.sendFile(
         path.join(
