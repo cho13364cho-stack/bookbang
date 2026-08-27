@@ -3,90 +3,21 @@
    📚 책방 로그인 / 회원가입
 ======================================== */
 
-console.log("🔥 AUTH.JS 실행됨");
-
-let supabaseClient = null;
-
-
-/* ========================================
-   Supabase 연결
-======================================== */
-
-async function initSupabase() {
-
-    try {
-
-        const response =
-            await fetch("/api/realtime-config", {
-                cache: "no-store"
-            });
-
-        if (!response.ok) {
-            throw new Error(
-                "Supabase 설정을 가져오지 못했습니다."
-            );
-        }
-
-        const config =
-            await response.json();
-
-        if (
-            !window.supabase ||
-            !config.url ||
-            !config.key
-        ) {
-            throw new Error(
-                "Supabase 연결 설정이 없습니다."
-            );
-        }
-
-        supabaseClient =
-            window.supabase.createClient(
-                config.url,
-                config.key
-            );
-
-        console.log("✅ Supabase 연결 성공");
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "❌ Supabase 연결 오류:",
-            error
-        );
-
-        showMessage(
-            "서버 연결에 실패했습니다.",
-            true
-        );
-
-        return false;
-    }
-}
-
 
 /* ========================================
    메시지
 ======================================== */
 
-function showMessage(
-    message,
-    isError = false
-) {
+function showMessage(message, isError = false) {
 
     const element =
-        document.getElementById(
-            "authMessage"
-        );
+        document.getElementById("authMessage");
 
     if (!element) {
         return;
     }
 
-    element.textContent =
-        message;
+    element.textContent = message;
 
     element.style.color =
         isError
@@ -102,29 +33,19 @@ function showMessage(
 function setupAuthToggle() {
 
     const loginForm =
-        document.getElementById(
-            "loginForm"
-        );
+        document.getElementById("loginForm");
 
     const signupForm =
-        document.getElementById(
-            "signupForm"
-        );
+        document.getElementById("signupForm");
 
     const title =
-        document.getElementById(
-            "authTitle"
-        );
+        document.getElementById("authTitle");
 
     const description =
-        document.getElementById(
-            "authDescription"
-        );
+        document.getElementById("authDescription");
 
     const toggle =
-        document.getElementById(
-            "toggleAuth"
-        );
+        document.getElementById("toggleAuth");
 
 
     if (
@@ -136,60 +57,51 @@ function setupAuthToggle() {
     }
 
 
-    toggle.addEventListener(
-        "click",
-        () => {
+    toggle.addEventListener("click", () => {
 
-            const signupVisible =
-                signupForm.style.display !== "none";
+        const signupVisible =
+            signupForm.style.display !== "none";
 
 
-            if (signupVisible) {
+        if (signupVisible) {
 
-                signupForm.style.display =
-                    "none";
+            signupForm.style.display = "none";
+            loginForm.style.display = "flex";
 
-                loginForm.style.display =
-                    "flex";
-
-                if (title) {
-                    title.textContent =
-                        "책방에 들어오세요";
-                }
-
-                if (description) {
-                    description.textContent =
-                        "로그인하고 사람들과 책 이야기를 나눠보세요.";
-                }
-
-                toggle.textContent =
-                    "계정이 없으신가요? 회원가입";
-
-            } else {
-
-                loginForm.style.display =
-                    "none";
-
-                signupForm.style.display =
-                    "flex";
-
-                if (title) {
-                    title.textContent =
-                        "책방 계정 만들기";
-                }
-
-                if (description) {
-                    description.textContent =
-                        "닉네임을 정하고 책방에 참여해보세요.";
-                }
-
-                toggle.textContent =
-                    "이미 계정이 있으신가요? 로그인";
+            if (title) {
+                title.textContent =
+                    "책방에 들어오세요";
             }
 
-            showMessage("");
+            if (description) {
+                description.textContent =
+                    "로그인하고 사람들과 책 이야기를 나눠보세요.";
+            }
+
+            toggle.textContent =
+                "계정이 없으신가요? 회원가입";
+
+        } else {
+
+            loginForm.style.display = "none";
+            signupForm.style.display = "flex";
+
+            if (title) {
+                title.textContent =
+                    "책방 계정 만들기";
+            }
+
+            if (description) {
+                description.textContent =
+                    "닉네임을 정하고 책방에 참여해보세요.";
+            }
+
+            toggle.textContent =
+                "이미 계정이 있으신가요? 로그인";
         }
-    );
+
+        showMessage("");
+    });
 }
 
 
@@ -200,19 +112,13 @@ function setupAuthToggle() {
 async function signup() {
 
     const emailInput =
-        document.getElementById(
-            "signupEmail"
-        );
+        document.getElementById("signupEmail");
 
     const passwordInput =
-        document.getElementById(
-            "signupPassword"
-        );
+        document.getElementById("signupPassword");
 
     const nicknameInput =
-        document.getElementById(
-            "signupNickname"
-        );
+        document.getElementById("signupNickname");
 
 
     if (
@@ -220,10 +126,6 @@ async function signup() {
         !passwordInput ||
         !nicknameInput
     ) {
-        console.error(
-            "❌ 회원가입 입력창을 찾을 수 없습니다."
-        );
-
         return;
     }
 
@@ -238,7 +140,7 @@ async function signup() {
         nicknameInput.value.trim();
 
 
-    /* 입력값 확인 */
+    /* 입력값 검사 */
 
     if (!email) {
 
@@ -251,32 +153,10 @@ async function signup() {
     }
 
 
-    if (!password) {
-
-        showMessage(
-            "비밀번호를 입력해주세요.",
-            true
-        );
-
-        return;
-    }
-
-
     if (password.length < 6) {
 
         showMessage(
             "비밀번호는 6자 이상 입력해주세요.",
-            true
-        );
-
-        return;
-    }
-
-
-    if (!nickname) {
-
-        showMessage(
-            "닉네임을 입력해주세요.",
             true
         );
 
@@ -306,74 +186,49 @@ async function signup() {
     }
 
 
-    showMessage(
-        "회원가입 중..."
-    );
+    showMessage("회원가입 중...");
 
 
     try {
 
-        /*
-            ⭐ 핵심
+        const response =
+            await fetch("/api/auth/signup", {
 
-            profiles 테이블에 직접 INSERT하지 않는다.
+                method: "POST",
 
-            닉네임을 Auth metadata에 저장한다.
-            DB 트리거가 자동으로 profiles에 저장한다.
-        */
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.signUp({
+                credentials: "include",
 
-                email: email,
-
-                password: password,
-
-                options: {
-
-                    data: {
-                        nickname: nickname
-                    }
-
-                }
-
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    nickname: nickname
+                })
             });
 
 
-        if (error) {
-
-            console.error(
-                "❌ Supabase 회원가입 오류:",
-                error
-            );
-
-            throw error;
-        }
+        const result =
+            await response.json();
 
 
-        if (!data.user) {
+        if (!response.ok || !result.success) {
 
             throw new Error(
+                result.error ||
                 "회원가입에 실패했습니다."
             );
-
         }
 
 
         console.log(
-            "✅ Auth 계정 생성:",
-            data.user.id
+            "✅ 회원가입 성공"
         );
 
 
-        /*
-            이메일 인증 여부 확인
-        */
-
-        if (!data.session) {
+        if (result.emailConfirmationRequired) {
 
             showMessage(
                 "회원가입 완료! 이메일 인증 후 로그인해주세요."
@@ -385,88 +240,63 @@ async function signup() {
                 "회원가입 완료! 로그인되었습니다."
             );
 
+            setTimeout(() => {
+
+                window.location.href = "/";
+
+            }, 700);
+
+            return;
         }
 
 
-        /*
-            회원가입 폼 초기화
-        */
-
-        const signupForm =
-            document.getElementById(
-                "signupForm"
-            );
-
-        if (signupForm) {
-            signupForm.reset();
-        }
-
-
-        /*
-            로그인 화면으로 전환
-        */
+        /* 로그인 화면으로 전환 */
 
         const loginForm =
-            document.getElementById(
-                "loginForm"
-            );
+            document.getElementById("loginForm");
+
+        const signupForm =
+            document.getElementById("signupForm");
+
+        const title =
+            document.getElementById("authTitle");
+
+        const description =
+            document.getElementById("authDescription");
+
+        const toggle =
+            document.getElementById("toggleAuth");
+
+        const loginEmail =
+            document.getElementById("loginEmail");
+
 
         if (loginForm) {
-            loginForm.style.display =
-                "flex";
+            loginForm.style.display = "flex";
         }
 
         if (signupForm) {
-            signupForm.style.display =
-                "none";
+            signupForm.style.display = "none";
+            signupForm.reset();
         }
-
-
-        const title =
-            document.getElementById(
-                "authTitle"
-            );
 
         if (title) {
             title.textContent =
                 "책방에 들어오세요";
         }
 
-
-        const description =
-            document.getElementById(
-                "authDescription"
-            );
-
         if (description) {
             description.textContent =
                 "로그인하고 사람들과 책 이야기를 나눠보세요.";
         }
-
-
-        const toggle =
-            document.getElementById(
-                "toggleAuth"
-            );
 
         if (toggle) {
             toggle.textContent =
                 "계정이 없으신가요? 회원가입";
         }
 
-
-        /*
-            로그인 이메일 자동 입력
-        */
-
-        const loginEmail =
-            document.getElementById(
-                "loginEmail"
-            );
-
         if (loginEmail) {
-            loginEmail.value =
-                email;
+            loginEmail.value = email;
         }
 
 
@@ -476,22 +306,6 @@ async function signup() {
             "❌ 회원가입 오류:",
             error
         );
-
-
-        if (
-            error.message &&
-            error.message.includes(
-                "already registered"
-            )
-        ) {
-
-            showMessage(
-                "이미 가입된 이메일입니다. 로그인해주세요.",
-                true
-            );
-
-            return;
-        }
 
 
         showMessage(
@@ -510,14 +324,10 @@ async function signup() {
 async function login() {
 
     const emailInput =
-        document.getElementById(
-            "loginEmail"
-        );
+        document.getElementById("loginEmail");
 
     const passwordInput =
-        document.getElementById(
-            "loginPassword"
-        );
+        document.getElementById("loginPassword");
 
 
     if (
@@ -546,45 +356,44 @@ async function login() {
     }
 
 
-    showMessage(
-        "로그인 중..."
-    );
+    showMessage("로그인 중...");
 
 
     try {
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth
-                .signInWithPassword({
+        const response =
+            await fetch("/api/auth/login", {
 
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                credentials: "include",
+
+                body: JSON.stringify({
                     email: email,
-
                     password: password
-
-                });
-
-
-        if (error) {
-
-            throw error;
-        }
+                })
+            });
 
 
-        if (!data.user) {
+        const result =
+            await response.json();
+
+
+        if (!response.ok || !result.success) {
 
             throw new Error(
+                result.error ||
                 "로그인에 실패했습니다."
             );
-
         }
 
 
         console.log(
-            "✅ 로그인 성공:",
-            data.user.id
+            "✅ 로그인 성공"
         );
 
 
@@ -593,15 +402,11 @@ async function login() {
         );
 
 
-        setTimeout(
-            () => {
+        setTimeout(() => {
 
-                window.location.href =
-                    "/";
+            window.location.href = "/";
 
-            },
-            500
-        );
+        }, 500);
 
 
     } catch (error) {
@@ -613,6 +418,7 @@ async function login() {
 
 
         showMessage(
+            error.message ||
             "이메일 또는 비밀번호가 올바르지 않습니다.",
             true
         );
@@ -621,41 +427,47 @@ async function login() {
 
 
 /* ========================================
-   로그인 상태 확인
+   현재 로그인 상태 확인
 ======================================== */
 
 async function checkSession() {
 
-    if (!supabaseClient) {
-        return;
-    }
+    try {
+
+        const response =
+            await fetch("/api/auth/me", {
+
+                method: "GET",
+
+                credentials: "include",
+
+                cache: "no-store"
+            });
 
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth
-            .getSession();
+        const result =
+            await response.json();
 
 
-    if (error) {
+        if (
+            response.ok &&
+            result.success &&
+            result.user
+        ) {
+
+            console.log(
+                "✅ 로그인 상태:",
+                result.user.nickname
+            );
+
+        }
+
+    } catch (error) {
 
         console.error(
-            "❌ 세션 확인 오류:",
+            "❌ 로그인 상태 확인 오류:",
             error
         );
-
-        return;
-    }
-
-
-    if (data.session) {
-
-        console.log(
-            "✅ 이미 로그인되어 있습니다."
-        );
-
     }
 }
 
@@ -667,14 +479,10 @@ async function checkSession() {
 function setupForms() {
 
     const loginForm =
-        document.getElementById(
-            "loginForm"
-        );
+        document.getElementById("loginForm");
 
     const signupForm =
-        document.getElementById(
-            "signupForm"
-        );
+        document.getElementById("signupForm");
 
 
     if (loginForm) {
@@ -689,7 +497,6 @@ function setupForms() {
 
             }
         );
-
     }
 
 
@@ -705,7 +512,6 @@ function setupForms() {
 
             }
         );
-
     }
 }
 
@@ -718,14 +524,9 @@ document.addEventListener(
     "DOMContentLoaded",
     async () => {
 
-        const connected =
-            await initSupabase();
-
-
-        if (!connected) {
-            return;
-        }
-
+        console.log(
+            "🔥 책방 인증 시스템 시작"
+        );
 
         setupAuthToggle();
 
@@ -736,4 +537,3 @@ document.addEventListener(
     }
 );
 ```
-
