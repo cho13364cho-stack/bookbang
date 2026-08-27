@@ -3,6 +3,8 @@
    📚 책방 로그인 / 회원가입
 ======================================== */
 
+console.log("🔥 AUTH.JS 실행됨");
+
 let supabaseClient = null;
 
 
