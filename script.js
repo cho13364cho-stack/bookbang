@@ -488,25 +488,26 @@ async function sendMessage() {
 
     try {
 
-        const response =
-            await fetch(
-                "/api/messages",
-                {
-                    method: "POST",
+       
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
 
-                    body: JSON.stringify({
-                        book_id: book.id,
-                        nickname: userId,
-                        content: text
-                    })
-                }
-            );
+const response =
+    await fetch(
+        "/api/messages",
+        {
+            method: "POST",
 
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+                book_id: book.id,
+                content: text
+            })
+        }
+    );
 
         const result =
             await response.json();
