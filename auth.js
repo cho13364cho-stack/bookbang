@@ -110,13 +110,18 @@ async function signup() {
 
     try {
 
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signUp({
-            email,
-            password
-        });
+    const {
+    data,
+    error
+} = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+        data: {
+            nickname: nickname
+        }
+    }
+});
 
         if (error) {
             throw error;
