@@ -235,7 +235,7 @@ function renderChatRoom() {
 
 
 /* ========================================
-   메시지 표시
+   메시지 표시 닉네임
 ======================================== */
 
 function renderMessage(message) {
@@ -263,23 +263,12 @@ function renderMessage(message) {
     }
 
 
-    const currentUserId =
-        getUserId();
-
-
-    const isMine =
-        String(message.nickname) ===
-        String(currentUserId);
-
-
     const element =
         document.createElement("div");
 
 
     element.className =
-        isMine
-            ? "message mine"
-            : "message";
+        "message";
 
 
     if (message.id) {
@@ -290,13 +279,30 @@ function renderMessage(message) {
     }
 
 
+    /* 닉네임 */
+
+    const nickname =
+        document.createElement("div");
+
+    nickname.className =
+        "message-nickname";
+
+    nickname.textContent =
+        message.nickname || "사용자";
+
+
+    /* 내용 */
+
     const paragraph =
         document.createElement("p");
-
 
     paragraph.textContent =
         message.content || "";
 
+
+    element.appendChild(
+        nickname
+    );
 
     element.appendChild(
         paragraph
@@ -307,6 +313,7 @@ function renderMessage(message) {
         element
     );
 }
+
 
 
 /* ========================================
@@ -645,7 +652,7 @@ document.addEventListener(
 
             await loadMessages();
 
-            await setupRealtimeChat();
+         
 
         }
 
