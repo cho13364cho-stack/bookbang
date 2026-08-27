@@ -874,4 +874,110 @@ async function loadCurrentUser() {
 
         return null;
     }
+   /* ========================================
+   HEADER 로그인 상태
+======================================== */
+
+async function updateHeaderLogin() {
+
+    const loginButton =
+        document.getElementById("headerLogin");
+
+    if (!loginButton) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch("/api/auth/me", {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store"
+            });
+
+        if (!response.ok) {
+            loginButton.textContent = "로그인";
+            loginButton.href = "login.html";
+            return;
+        }
+
+        const result =
+            await response.json();
+
+        /* 로그인 상태 */
+
+        if (
+            result.success &&
+            result.user
+        ) {
+
+            loginButton.textContent =
+                `${result.user.nickname}님`;
+
+            /*
+               로그인한 상태에서는
+               프로필 페이지로 연결할 수 있음.
+               아직 프로필 페이지가 없다면
+               일단 로그인 페이지로 유지.
+            */
+
+            loginButton.href = "login.html";
+
+        }
+
+        /* 로그인하지 않은 상태 */
+
+        else {
+
+            loginButton.textContent =
+                "로그인";
+
+            loginButton.href =
+                "login.html";
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "❌ 헤더 로그인 상태 확인 오류:",
+            error
+        );
+
+        loginButton.textContent =
+            "로그인";
+
+        loginButton.href =
+            "login.html";
+
+    }
+
+}
+
+
+/* ========================================
+   시작
+======================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        /*
+           기존 책 목록 불러오기
+        */
+        // 기존에 있던 코드가 있다면
+        // 그대로 유지하면 됨.
+
+
+        /*
+           헤더 로그인 상태 확인
+        */
+        await updateHeaderLogin();
+
+    }
+);
 }
