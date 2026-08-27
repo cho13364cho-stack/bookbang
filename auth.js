@@ -131,21 +131,7 @@ async function signup() {
             throw new Error("회원가입에 실패했습니다.");
         }
 
-        const {
-            error: profileError
-        } = await supabaseClient
-            .from("profiles")
-            .insert({
-                id: data.user.id,
-                nickname: nickname
-            });
-
-        if (profileError) {
-            console.error(profileError);
-            throw new Error(
-                "닉네임 저장에 실패했습니다."
-            );
-        }
+        
 
         showMessage(
             "회원가입 완료! 이제 로그인해주세요."
