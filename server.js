@@ -1,9 +1,4 @@
 
-// ========================================
-// 📚 책방 서버
-// Node.js + Express + Supabase
-// ========================================
-
 require("dotenv").config();
 
 const express = require("express");
@@ -12,44 +7,29 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-const PORT =
-    process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 
 /* ========================================
-   환경변수
+   Supabase 설정
 ======================================== */
 
-const supabaseUrl =
-    process.env.SUPABASE_URL;
-
-const supabaseKey =
-    process.env.SUPABASE_KEY;
-
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-
-    console.error(
-        "❌ SUPABASE_URL / SUPABASE_KEY가 없습니다."
-    );
-
+    console.error("❌ SUPABASE_URL 또는 SUPABASE_KEY가 없습니다.");
     process.exit(1);
 }
 
-
-/* ========================================
-   Supabase
-======================================== */
-
-const supabase =
-    createClient(
-        supabaseUrl,
-        supabaseKey
-    );
+const supabase = createClient(
+    supabaseUrl,
+    supabaseKey
+);
 
 
 /* ========================================
-   Express
+   Express 설정
 ======================================== */
 
 app.use(
@@ -65,73 +45,57 @@ app.use(
     })
 );
 
-
-/* ========================================
-   정적 파일
-======================================== */
-
 app.use(
     express.static(__dirname)
 );
 
 
 /* ========================================
-   쿠키 가져오기
+   쿠키 읽기
 ======================================== */
 
 function getCookie(req, name) {
 
-    const cookieHeader =
-        req.headers.cookie;
+    const cookieHeader = req.headers.cookie;
 
     if (!cookieHeader) {
         return null;
     }
 
-
-    const cookies =
-        cookieHeader
-            .split(";")
-            .map(cookie => cookie.trim());
-
+    const cookies = cookieHeader.split(";");
 
     for (const cookie of cookies) {
 
-        const separator =
-            cookie.indexOf("=");
+        const separator = cookie.indexOf("=");
 
         if (separator === -1) {
             continue;
         }
 
+        const key = cookie
+            .substring(0, separator)
+            .trim();
 
-        const key =
-            cookie.substring(
-                0,
-                separator
-            );
-
-        const value =
-            cookie.substring(
-                separator + 1
-            );
-
+        const value = cookie
+            .substring(separator + 1)
+            .trim();
 
         if (key === name) {
 
-            return decodeURIComponent(
-                value
-            );
+            try {
+                return decodeURIComponent(value);
+            } catch {
+                return value;
+            }
         }
     }
-
 
     return null;
 }
 
 
 /* ========================================
-   인증 쿠키 설정
+   로그인 쿠키 설정
 ======================================== */
 
 function setAuthCookies(
@@ -145,7 +109,6 @@ function setAuthCookies(
             ? "; Secure"
             : "";
 
-
     res.setHeader(
         "Set-Cookie",
         [
@@ -158,24 +121,29 @@ function setAuthCookies(
 
 
 /* ========================================
-   인증 쿠키 삭제
+   로그인 쿠키 삭제
 ======================================== */
 
 function clearAuthCookies(res) {
 
+    const secure =
+        process.env.NODE_ENV === "production"
+            ? "; Secure"
+            : "";
+
     res.setHeader(
         "Set-Cookie",
         [
-            "bookbang_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+            `bookbang_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`,
 
-            "bookbang_refresh_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+            `bookbang_refresh_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`
         ]
     );
 }
 
 
 /* ========================================
-   현재 사용자 가져오기
+   현재 로그인 사용자
 ======================================== */
 
 async function getCurrentUser(req) {
@@ -186,27 +154,35 @@ async function getCurrentUser(req) {
             "bookbang_access_token"
         );
 
-
     if (!accessToken) {
         return null;
     }
 
+    try {
 
-    const {
-        data,
-        error
-    } =
-        await supabase.auth.getUser(
-            accessToken
+        const {
+            data,
+            error
+        } =
+            await supabase.auth.getUser(
+                accessToken
+            );
+
+        if (error || !data || !data.user) {
+            return null;
+        }
+
+        return data.user;
+
+    } catch (error) {
+
+        console.error(
+            "❌ 사용자 확인 오류:",
+            error.message
         );
 
-
-    if (error || !data.user) {
         return null;
     }
-
-
-    return data.user;
 }
 
 
@@ -214,16 +190,38 @@ async function getCurrentUser(req) {
    홈페이지
 ======================================== */
 
-app.get("/"), async (req, res) => {
+app.get(
+    "/",
+    async (req, res) => {
 
-    try {
+        try {
 
-        const user =
-            await getCurrentUser(req);
+            const user =
+                await getCurrentUser(req);
 
+            if (!user) {
 
-        // 로그인하지 않은 경우
-        if (!user) {
+                return res.sendFile(
+                    path.join(
+                        __dirname,
+                        "login.html"
+                    )
+                );
+            }
+
+            return res.sendFile(
+                path.join(
+                    __dirname,
+                    "index.html"
+                )
+            );
+
+        } catch (error) {
+
+            console.error(
+                "❌ 홈페이지 오류:",
+                error
+            );
 
             return res.sendFile(
                 path.join(
@@ -231,53 +229,14 @@ app.get("/"), async (req, res) => {
                     "login.html"
                 )
             );
-
         }
-
-
-        // 로그인한 경우
-        return res.sendFile(
-            path.join(
-                __dirname,
-                "index.html"
-            )
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "❌ 홈페이지 접속 오류:",
-            error
-        );
-
-        return res.sendFile(
-            path.join(
-                __dirname,
-                "login.html"
-            )
-        );
-
     }
-
-});
-
-    return res.sendFile(
-        path.join(
-            __dirname,
-            "index.html"
-        )
-    );
-
-});
+);
 
 
 /* ========================================
-   로그인 / 회원가입
+   회원가입
 ======================================== */
-
-
-/* 회원가입 */
 
 app.post(
     "/api/auth/signup",
@@ -344,7 +303,6 @@ app.post(
                     password: password,
 
                     options: {
-
                         data: {
                             nickname: nickname
                         }
@@ -359,13 +317,16 @@ app.post(
                     error.message
                 );
 
+                const message =
+                    error.message.toLowerCase();
 
                 if (
-                    error.message
-                        .toLowerCase()
-                        .includes(
-                            "already registered"
-                        )
+                    message.includes(
+                        "already registered"
+                    ) ||
+                    message.includes(
+                        "already been registered"
+                    )
                 ) {
 
                     return res.status(409).json({
@@ -375,15 +336,15 @@ app.post(
                     });
                 }
 
-
                 return res.status(400).json({
                     success: false,
-                    error: error.message
+                    error:
+                        error.message
                 });
             }
 
 
-            if (!data.user) {
+            if (!data || !data.user) {
 
                 return res.status(400).json({
                     success: false,
@@ -392,11 +353,6 @@ app.post(
                 });
             }
 
-
-            /*
-                이메일 인증이 꺼져 있으면
-                session이 바로 생성된다.
-            */
 
             if (data.session) {
 
@@ -417,16 +373,17 @@ app.post(
 
                 user: {
 
-                    id: data.user.id,
+                    id:
+                        data.user.id,
 
-                    email: data.user.email,
+                    email:
+                        data.user.email,
 
                     nickname:
-                        data.user.user_metadata
-                            ?.nickname || nickname
+                        data.user.user_metadata?.nickname ||
+                        nickname
                 }
             });
-
 
         } catch (error) {
 
@@ -434,7 +391,6 @@ app.post(
                 "❌ 회원가입 서버 오류:",
                 error
             );
-
 
             return res.status(500).json({
                 success: false,
@@ -446,7 +402,9 @@ app.post(
 );
 
 
-/* 로그인 */
+/* ========================================
+   로그인
+======================================== */
 
 app.post(
     "/api/auth/login",
@@ -495,7 +453,6 @@ app.post(
                     error.message
                 );
 
-
                 return res.status(401).json({
                     success: false,
                     error:
@@ -505,6 +462,7 @@ app.post(
 
 
             if (
+                !data ||
                 !data.session ||
                 !data.user
             ) {
@@ -530,16 +488,17 @@ app.post(
 
                 user: {
 
-                    id: data.user.id,
+                    id:
+                        data.user.id,
 
-                    email: data.user.email,
+                    email:
+                        data.user.email,
 
                     nickname:
-                        data.user.user_metadata
-                            ?.nickname || "사용자"
+                        data.user.user_metadata?.nickname ||
+                        "사용자"
                 }
             });
-
 
         } catch (error) {
 
@@ -547,7 +506,6 @@ app.post(
                 "❌ 로그인 서버 오류:",
                 error
             );
-
 
             return res.status(500).json({
                 success: false,
@@ -559,7 +517,9 @@ app.post(
 );
 
 
-/* 현재 로그인 사용자 */
+/* ========================================
+   현재 로그인 사용자
+======================================== */
 
 app.get(
     "/api/auth/me",
@@ -587,43 +547,44 @@ app.get(
 
                 user: {
 
-                    id: user.id,
+                    id:
+                        user.id,
 
-                    email: user.email,
+                    email:
+                        user.email,
 
                     nickname:
-                        user.user_metadata
-                            ?.nickname || "사용자"
+                        user.user_metadata?.nickname ||
+                        "사용자"
                 }
             });
-
 
         } catch (error) {
 
             console.error(
-                "❌ 사용자 확인 오류:",
+                "❌ 사용자 정보 오류:",
                 error
             );
-
 
             return res.status(500).json({
                 success: false,
                 error:
-                    "로그인 상태를 확인하지 못했습니다."
+                    "사용자 정보를 가져오지 못했습니다."
             });
         }
     }
 );
 
 
-/* 로그아웃 */
+/* ========================================
+   로그아웃
+======================================== */
 
 app.post(
     "/api/auth/logout",
     (req, res) => {
 
         clearAuthCookies(res);
-
 
         return res.json({
             success: true
@@ -659,7 +620,6 @@ app.get(
                     error.message
                 );
 
-
                 return res.status(500).json({
                     success: false,
                     error:
@@ -672,9 +632,9 @@ app.get(
 
                 success: true,
 
-                books: data || []
+                books:
+                    data || []
             });
-
 
         } catch (error) {
 
@@ -682,7 +642,6 @@ app.get(
                 "❌ 책 목록 서버 오류:",
                 error
             );
-
 
             return res.status(500).json({
                 success: false,
@@ -695,7 +654,7 @@ app.get(
 
 
 /* ========================================
-   DB 연결 테스트
+   DB 테스트
 ======================================== */
 
 app.get(
@@ -716,9 +675,7 @@ app.get(
             if (error) {
 
                 return res.status(500).json({
-
                     success: false,
-
                     error:
                         error.message
                 });
@@ -732,16 +689,14 @@ app.get(
                 message:
                     "📚 DB 연결 성공!",
 
-                books: data || []
+                books:
+                    data || []
             });
-
 
         } catch (error) {
 
             return res.status(500).json({
-
                 success: false,
-
                 error:
                     error.message
             });
@@ -751,7 +706,7 @@ app.get(
 
 
 /* ========================================
-   메시지 불러오기
+   채팅 메시지 조회
 ======================================== */
 
 app.get(
@@ -767,9 +722,7 @@ app.get(
         if (!bookId) {
 
             return res.status(400).json({
-
                 success: false,
-
                 error:
                     "책 정보가 없습니다."
             });
@@ -785,7 +738,10 @@ app.get(
                 await supabase
                     .from("messages")
                     .select("*")
-                    .eq("book_id", bookId)
+                    .eq(
+                        "book_id",
+                        bookId
+                    )
                     .order(
                         "created_at",
                         {
@@ -801,11 +757,8 @@ app.get(
                     error.message
                 );
 
-
                 return res.status(500).json({
-
                     success: false,
-
                     error:
                         "메시지를 불러오지 못했습니다."
                 });
@@ -820,27 +773,25 @@ app.get(
                     data || []
             });
 
-
         } catch (error) {
 
             console.error(
-                "❌ 메시지 서버 오류:",
+                "❌ 메시지 조회 서버 오류:",
                 error
             );
 
-
             return res.status(500).json({
-
                 success: false,
-
                 error:
                     "서버 오류가 발생했습니다."
             });
         }
     }
 );
+
+
 /* ========================================
-   메시지 저장
+   채팅 메시지 저장
 ======================================== */
 
 app.post(
@@ -848,23 +799,23 @@ app.post(
     async (req, res) => {
 
         const bookId =
-            String(req.body.book_id || "").trim();
+            String(
+                req.body.book_id || ""
+            ).trim();
 
         const content =
-            String(req.body.content || "").trim();
+            String(
+                req.body.content || ""
+            ).trim();
 
-
-        // -------------------------------
-        // 입력값 확인
-        // -------------------------------
 
         if (!bookId) {
 
             return res.status(400).json({
                 success: false,
-                error: "책 정보가 없습니다."
+                error:
+                    "책 정보가 없습니다."
             });
-
         }
 
 
@@ -872,9 +823,9 @@ app.post(
 
             return res.status(400).json({
                 success: false,
-                error: "메시지를 입력해주세요."
+                error:
+                    "메시지를 입력해주세요."
             });
-
         }
 
 
@@ -882,17 +833,13 @@ app.post(
 
             return res.status(400).json({
                 success: false,
-                error: "메시지는 500자 이하로 작성해주세요."
+                error:
+                    "메시지는 500자 이하로 작성해주세요."
             });
-
         }
 
 
         try {
-
-            // -------------------------------
-            // 현재 로그인한 사용자 확인
-            // -------------------------------
 
             const user =
                 await getCurrentUser(req);
@@ -902,25 +849,18 @@ app.post(
 
                 return res.status(401).json({
                     success: false,
-                    error: "로그인이 필요합니다."
+                    error:
+                        "로그인이 필요합니다."
                 });
-
             }
 
 
-            // -------------------------------
-            // 로그인한 사용자의 닉네임
-            // -------------------------------
-
             const nickname =
                 String(
-                    user.user_metadata?.nickname || "사용자"
+                    user.user_metadata?.nickname ||
+                    "사용자"
                 ).trim();
 
-
-            // -------------------------------
-            // Supabase에 메시지 저장
-            // -------------------------------
 
             const {
                 data,
@@ -930,18 +870,19 @@ app.post(
                     .from("messages")
                     .insert([
                         {
-                            book_id: bookId,
-                            nickname: nickname,
-                            content: content
+                            book_id:
+                                bookId,
+
+                            nickname:
+                                nickname,
+
+                            content:
+                                content
                         }
                     ])
                     .select()
                     .single();
 
-
-            // -------------------------------
-            // DB 오류
-            // -------------------------------
 
             if (error) {
 
@@ -952,45 +893,39 @@ app.post(
 
                 return res.status(500).json({
                     success: false,
-                    error: "메시지를 저장하지 못했습니다."
+                    error:
+                        "메시지를 저장하지 못했습니다."
                 });
-
             }
 
-
-            // -------------------------------
-            // 성공
-            // -------------------------------
 
             return res.status(201).json({
 
                 success: true,
 
-                message: data
-
+                message:
+                    data
             });
-
 
         } catch (error) {
 
             console.error(
-                "❌ 메시지 서버 오류:",
+                "❌ 메시지 저장 서버 오류:",
                 error
             );
 
             return res.status(500).json({
                 success: false,
-                error: "서버 오류가 발생했습니다."
+                error:
+                    "메시지 저장 중 서버 오류가 발생했습니다."
             });
-
         }
-
     }
 );
 
 
 /* ========================================
-   잘못된 API
+   존재하지 않는 API
 ======================================== */
 
 app.use(
@@ -1002,7 +937,7 @@ app.use(
             success: false,
 
             error:
-                "API를 찾을 수 없습니다."
+                "요청한 API를 찾을 수 없습니다."
         });
     }
 );
@@ -1033,7 +968,6 @@ app.use(
             "❌ 서버 오류:",
             error
         );
-
 
         return res.status(500).json({
 
@@ -1079,4 +1013,3 @@ app.listen(
         console.log("");
     }
 );
-
