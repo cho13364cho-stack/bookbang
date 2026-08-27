@@ -1,4 +1,4 @@
-```css
+
 /* ========================================
    📚 책방
    Minimal Editorial Design
@@ -1241,6 +1241,169 @@ img {
         height: 45px;
     }
 }
-```
 
-```
+/* ========================================
+   💬 채팅 메시지 디자인
+======================================== */
+
+#messages {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    padding: 24px;
+
+    overflow-y: auto;
+
+}
+
+
+/* 메시지 한 줄 */
+
+.message {
+
+    display: flex;
+
+    flex-direction: column;
+
+    max-width: 70%;
+
+}
+
+
+/* 상대방 */
+
+.message.other {
+
+    align-self: flex-start;
+
+    align-items: flex-start;
+
+}
+
+
+/* 내 메시지 */
+
+.message.mine {
+
+    align-self: flex-end;
+
+    align-items: flex-end;
+
+}
+
+
+/* 닉네임 */
+
+.message-nickname {
+
+    margin-bottom: 5px;
+
+    padding-left: 4px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    color: #777;
+
+}
+
+
+/* 말풍선 */
+
+.message-bubble {
+
+    padding: 11px 15px;
+
+    border-radius: 18px;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    word-break: break-word;
+
+}
+
+
+/* 상대방 말풍선 */
+
+.message.other .message-bubble {
+
+    background: #f1f1ee;
+
+    color: #333;
+
+    border-top-left-radius: 5px;
+
+}
+
+
+/* 내 말풍선 */
+
+.message.mine .message-bubble {
+
+    background: #222;
+
+    color: white;
+
+    border-top-right-radius: 5px;
+
+}
+
+
+/* ========================================
+   채팅 스크롤바
+======================================== */
+
+#messages::-webkit-scrollbar {
+
+    width: 6px;
+
+}
+
+
+#messages::-webkit-scrollbar-thumb {
+
+    background: #d0d0cc;
+
+    border-radius: 10px;
+
+}
+
+
+/* ========================================
+   모바일
+======================================== */
+
+@media (max-width: 600px) {
+
+    #messages {
+
+        padding: 16px;
+
+        gap: 12px;
+
+    }
+
+
+    .message {
+
+        max-width: 82%;
+
+    }
+
+
+    .message-bubble {
+
+        font-size: 14px;
+
+        padding: 10px 13px;
+
+    }
+
+}
