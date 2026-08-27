@@ -1,3 +1,6 @@
+window.currentUser = null;
+
+
 /* ========================================
    📚 책 데이터
 ======================================== */
@@ -237,7 +240,6 @@ function renderChatRoom() {
 /* ========================================
    메시지 표시 닉네임
 ======================================== */
-
 function renderMessage(message) {
 
     const messages =
@@ -248,7 +250,7 @@ function renderMessage(message) {
     }
 
 
-    /* 중복 방지 */
+    // 중복 메시지 방지
 
     if (message.id) {
 
@@ -263,12 +265,32 @@ function renderMessage(message) {
     }
 
 
+    // 현재 로그인한 사용자 정보
+
+    const currentUser =
+        window.currentUser || null;
+
+    const myNickname =
+        currentUser?.nickname || "";
+
+
+    // 내 메시지인지 확인
+
+    const isMine =
+        myNickname &&
+        String(message.nickname) ===
+        String(myNickname);
+
+
+    // 메시지 전체
+
     const element =
         document.createElement("div");
 
-
     element.className =
-        "message";
+        isMine
+            ? "message mine"
+            : "message other";
 
 
     if (message.id) {
@@ -279,33 +301,39 @@ function renderMessage(message) {
     }
 
 
-    /* 닉네임 */
+    // 상대방 닉네임
 
-    const nickname =
+    if (!isMine) {
+
+        const nickname =
+            document.createElement("div");
+
+        nickname.className =
+            "message-nickname";
+
+        nickname.textContent =
+            message.nickname || "사용자";
+
+        element.appendChild(
+            nickname
+        );
+    }
+
+
+    // 말풍선
+
+    const bubble =
         document.createElement("div");
 
-    nickname.className =
-        "message-nickname";
+    bubble.className =
+        "message-bubble";
 
-    nickname.textContent =
-        message.nickname || "사용자";
-
-
-    /* 내용 */
-
-    const paragraph =
-        document.createElement("p");
-
-    paragraph.textContent =
+    bubble.textContent =
         message.content || "";
 
 
     element.appendChild(
-        nickname
-    );
-
-    element.appendChild(
-        paragraph
+        bubble
     );
 
 
@@ -313,7 +341,6 @@ function renderMessage(message) {
         element
     );
 }
-
 
 
 /* ========================================
@@ -640,14 +667,16 @@ document.addEventListener(
     "DOMContentLoaded",
     async () => {
 
-        renderBooks();
+   renderBooks();
 
-        renderChatRoom();
+renderChatRoom();
 
-        setupChat();
+setupChat();
 
-        const messages =
-            document.getElementById("messages");
+await loadCurrentUser();
+
+const messages =
+    document.getElementById("messages");
 
         if (messages) {
 
@@ -785,4 +814,64 @@ async function setupRealtimeChat() {
 
     }
 
+}
+async function loadCurrentUser() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/auth/me",
+                {
+                    credentials: "include",
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            console.log(
+                "로그인된 사용자가 없습니다."
+            );
+
+            return null;
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if (
+            !result.success ||
+            !result.user
+        ) {
+
+            return null;
+        }
+
+
+        window.currentUser =
+            result.user;
+
+
+        console.log(
+            "✅ 현재 사용자:",
+            result.user.nickname
+        );
+
+
+        return result.user;
+
+
+    } catch (error) {
+
+        console.error(
+            "❌ 사용자 정보 오류:",
+            error
+        );
+
+        return null;
+    }
 }
