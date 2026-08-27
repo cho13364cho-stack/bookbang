@@ -1,4 +1,4 @@
-javascript
+
 // ========================================
 // 📚 책방 서버
 // Node.js + Express + Supabase
