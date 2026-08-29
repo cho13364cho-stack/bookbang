@@ -1,83 +1,141 @@
 
 // ========================================
 // 📚 책방 서버
+// Anonymous Book Community
+//
 // Node.js + Express + Supabase
-// 익명 사용자 시스템
+//
+// 현재 기능
+// 1. 익명 사용자
+// 2. 익명 닉네임
+// 3. 책 목록
+// 4. 책별 토론방
+// 5. 익명 메시지 작성
+// 6. 익명 메시지 조회
+//
+// 추후 확장
+// 7. 프로필
+// 8. 친구 추가
+// 9. 1:1 대화
+// 10. 읽은 책
+// 11. 별점
+// 12. 리뷰
 // ========================================
+
 
 require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
-const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
+
+const { createClient } =
+    require("@supabase/supabase-js");
+
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+    process.env.PORT || 3000;
 
 
 // ========================================
-// Supabase 설정
+// Supabase
 // ========================================
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl =
+    process.env.SUPABASE_URL;
+
+const supabaseKey =
+    process.env.SUPABASE_KEY;
+
 
 if (!supabaseUrl || !supabaseKey) {
 
-    console.error(
-        "❌ Supabase 환경변수가 없습니다."
-    );
+    console.error("");
+    console.error("❌ Supabase 환경변수가 없습니다.");
+    console.error("");
+    console.error("SUPABASE_URL");
+    console.error("SUPABASE_KEY");
+    console.error("");
 
     process.exit(1);
 }
 
-const supabase = createClient(
-    supabaseUrl,
-    supabaseKey
+
+const supabase =
+    createClient(
+        supabaseUrl,
+        supabaseKey
+    );
+
+
+// ========================================
+// Express
+// ========================================
+
+app.use(
+    express.json({
+        limit: "20kb"
+    })
+);
+
+
+app.use(
+    express.urlencoded({
+        extended: true,
+        limit: "20kb"
+    })
 );
 
 
 // ========================================
-// Express 설정
+// 익명 사용자 ID
+// ========================================
+//
+// 로그인 대신 브라우저별 익명 ID를 사용합니다.
+//
+// 쿠키가 없으면 서버가 새 ID를 만들어 줍니다.
+//
+// 예:
+// anonymous_id = 7f3c...
+//
+// 이 ID를 이용하면 나중에
+// 프로필 / 리뷰 / 별점 / 친구 기능 등을
+// 연결할 수 있습니다.
 // ========================================
 
-app.use(express.json({
-    limit: "10kb"
-}));
-
-app.use(express.urlencoded({
-    extended: true,
-    limit: "10kb"
-}));
-
-
-// ========================================
-// 쿠키 읽기
-// ========================================
 
 function getCookie(req, name) {
 
     const cookieHeader =
         req.headers.cookie;
 
+
     if (!cookieHeader) {
+
         return null;
+
     }
+
 
     const cookies =
         cookieHeader.split(";");
+
 
     for (const cookie of cookies) {
 
         const parts =
             cookie.trim().split("=");
 
+
         const key =
             parts.shift();
 
+
         const value =
             parts.join("=");
+
 
         if (key === name) {
 
@@ -92,20 +150,61 @@ function getCookie(req, name) {
                 return value;
 
             }
+
         }
+
     }
 
+
     return null;
+
 }
 
 
 // ========================================
-// 인증 쿠키 설정
+// 익명 사용자 생성
 // ========================================
 
-function setAuthCookies(
+function createAnonymousId() {
+
+    return crypto
+        .randomUUID();
+
+}
+
+
+// ========================================
+// 익명 사용자 가져오기
+// ========================================
+
+function getAnonymousId(req) {
+
+    const existingId =
+        getCookie(
+            req,
+            "bookbang_anonymous_id"
+        );
+
+
+    if (existingId) {
+
+        return existingId;
+
+    }
+
+
+    return createAnonymousId();
+
+}
+
+
+// ========================================
+// 익명 사용자 쿠키 설정
+// ========================================
+
+function setAnonymousCookie(
     res,
-    session
+    anonymousId
 ) {
 
     const secure =
@@ -113,95 +212,137 @@ function setAuthCookies(
             ? "; Secure"
             : "";
 
+
     res.setHeader(
         "Set-Cookie",
         [
-
-            "bookbang_access_token=" +
+            "bookbang_anonymous_id=" +
                 encodeURIComponent(
-                    session.access_token
+                    anonymousId
                 ) +
-                "; Path=/; HttpOnly; SameSite=Lax; Max-Age=3600" +
-                secure,
-
-            "bookbang_refresh_token=" +
-                encodeURIComponent(
-                    session.refresh_token
-                ) +
-                "; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000" +
+                "; Path=/" +
+                "; HttpOnly" +
+                "; SameSite=Lax" +
+                "; Max-Age=31536000" +
                 secure
-
         ]
     );
+
 }
 
 
 // ========================================
-// 인증 쿠키 삭제
+// 익명 닉네임
+// ========================================
+//
+// 익명 ID와 별개로
+// 사용자가 화면에서 볼 이름입니다.
+//
+// 예:
+// 익명_4821
+// 익명_1038
+//
+// 나중에 프로필에서 변경 가능하도록
+// 구조를 분리해 둡니다.
 // ========================================
 
-function clearAuthCookies(res) {
+function createAnonymousNickname() {
 
-    res.setHeader(
-        "Set-Cookie",
-        [
+    const number =
+        Math.floor(
+            1000 +
+            Math.random() * 9000
+        );
 
-            "bookbang_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
 
-            "bookbang_refresh_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+    return `익명_${number}`;
 
-        ]
-    );
 }
 
 
 // ========================================
-// 현재 로그인 사용자 확인
+// 현재 익명 사용자
+// ========================================
+//
+// 지금은 로그인하지 않습니다.
+//
+// 브라우저 최초 방문 시
+// 익명 ID + 익명 닉네임을 생성합니다.
 // ========================================
 
-async function getCurrentUser(req) {
+function getAnonymousUser(req, res) {
 
-    const accessToken =
+    let anonymousId =
         getCookie(
             req,
-            "bookbang_access_token"
+            "bookbang_anonymous_id"
         );
 
-    if (!accessToken) {
-        return null;
-    }
 
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabase.auth.getUser(
-                accessToken
-            );
-
-        if (
-            error ||
-            !data ||
-            !data.user
-        ) {
-
-            return null;
-
-        }
-
-        return data.user;
-
-    } catch (error) {
-
-        console.error(
-            "❌ 사용자 확인 오류:",
-            error.message
+    let nickname =
+        getCookie(
+            req,
+            "bookbang_anonymous_nickname"
         );
 
-        return null;
+
+    if (!anonymousId) {
+
+        anonymousId =
+            createAnonymousId();
+
+
+        setAnonymousCookie(
+            res,
+            anonymousId
+        );
+
     }
+
+
+    if (!nickname) {
+
+        nickname =
+            createAnonymousNickname();
+
+
+        const secure =
+            process.env.NODE_ENV === "production"
+                ? "; Secure"
+                : "";
+
+
+        const existingCookie =
+            `bookbang_anonymous_id=${encodeURIComponent(
+                anonymousId
+            )}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${secure}`;
+
+
+        const nicknameCookie =
+            `bookbang_anonymous_nickname=${encodeURIComponent(
+                nickname
+            )}; Path=/; SameSite=Lax; Max-Age=31536000${secure}`;
+
+
+        res.setHeader(
+            "Set-Cookie",
+            [
+                existingCookie,
+                nicknameCookie
+            ]
+        );
+
+    }
+
+
+    return {
+
+        id: anonymousId,
+
+        nickname: nickname
+
+    };
+
 }
 
 
@@ -220,33 +361,12 @@ app.use(
 
 
 // ========================================
-// ⭐ 홈페이지
+// 홈페이지
 // ========================================
 
 app.get(
     "/",
-    async (req, res) => {
-
-        const user =
-            await getCurrentUser(req);
-
-
-        // 로그인하지 않은 경우
-        // 로그인 페이지로 이동
-
-        if (!user) {
-
-            return res.sendFile(
-                path.join(
-                    __dirname,
-                    "login.html"
-                )
-            );
-        }
-
-
-        // 로그인한 경우
-        // 책방 메인 페이지
+    (req, res) => {
 
         return res.sendFile(
             path.join(
@@ -260,263 +380,26 @@ app.get(
 
 
 // ========================================
-// 회원가입
+// 익명 사용자 정보
 // ========================================
-// 닉네임 없음
-// 이메일 + 비밀번호만 사용
+//
+// 프론트에서 현재 익명 닉네임을
+// 가져갈 수 있습니다.
+//
+// GET /api/user
 // ========================================
 
-app.post(
-    "/api/auth/signup",
-    async (req, res) => {
-
-        const email =
-            String(
-                req.body.email || ""
-            ).trim();
-
-        const password =
-            String(
-                req.body.password || ""
-            );
-
-
-        // 이메일 검사
-
-        if (!email) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                error:
-                    "이메일을 입력해주세요."
-
-            });
-
-        }
-
-
-        // 비밀번호 검사
-
-        if (password.length < 6) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                error:
-                    "비밀번호는 6자 이상 입력해주세요."
-
-            });
-
-        }
-
+app.get(
+    "/api/user",
+    (req, res) => {
 
         try {
 
-            const {
-                data,
-                error
-            } =
-                await supabase.auth.signUp({
-
-                    email: email,
-
-                    password: password
-
-                });
-
-
-            // Supabase 오류
-
-            if (error) {
-
-                console.error(
-                    "❌ 회원가입 오류:",
-                    error.message
+            const user =
+                getAnonymousUser(
+                    req,
+                    res
                 );
-
-                return res.status(400).json({
-
-                    success: false,
-
-                    error:
-                        error.message
-
-                });
-
-            }
-
-
-            // 사용자 생성 실패
-
-            if (
-                !data ||
-                !data.user
-            ) {
-
-                return res.status(400).json({
-
-                    success: false,
-
-                    error:
-                        "회원가입에 실패했습니다."
-
-                });
-
-            }
-
-
-            // 이메일 인증이 꺼져 있으면
-            // 바로 로그인
-
-            if (data.session) {
-
-                setAuthCookies(
-                    res,
-                    data.session
-                );
-
-            }
-
-
-            return res.status(201).json({
-
-                success: true,
-
-                emailConfirmationRequired:
-                    !data.session,
-
-                user: {
-
-                    id:
-                        data.user.id,
-
-                    email:
-                        data.user.email
-
-                }
-
-            });
-
-        } catch (error) {
-
-            console.error(
-                "❌ 회원가입 서버 오류:",
-                error
-            );
-
-            return res.status(500).json({
-
-                success: false,
-
-                error:
-                    "회원가입 중 서버 오류가 발생했습니다."
-
-            });
-
-        }
-
-    }
-);
-
-
-// ========================================
-// 로그인
-// ========================================
-
-app.post(
-    "/api/auth/login",
-    async (req, res) => {
-
-        const email =
-            String(
-                req.body.email || ""
-            ).trim();
-
-        const password =
-            String(
-                req.body.password || ""
-            );
-
-
-        if (
-            !email ||
-            !password
-        ) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                error:
-                    "이메일과 비밀번호를 입력해주세요."
-
-            });
-
-        }
-
-
-        try {
-
-            const {
-                data,
-                error
-            } =
-                await supabase.auth.signInWithPassword({
-
-                    email:
-                        email,
-
-                    password:
-                        password
-
-                });
-
-
-            if (error) {
-
-                console.error(
-                    "❌ 로그인 오류:",
-                    error.message
-                );
-
-                return res.status(401).json({
-
-                    success: false,
-
-                    error:
-                        "이메일 또는 비밀번호가 올바르지 않습니다."
-
-                });
-
-            }
-
-
-            if (
-                !data.session ||
-                !data.user
-            ) {
-
-                return res.status(401).json({
-
-                    success: false,
-
-                    error:
-                        "로그인 세션을 만들 수 없습니다."
-
-                });
-
-            }
-
-
-            // 인증 쿠키 저장
-
-            setAuthCookies(
-                res,
-                data.session
-            );
 
 
             return res.json({
@@ -525,11 +408,10 @@ app.post(
 
                 user: {
 
-                    id:
-                        data.user.id,
+                    id: user.id,
 
-                    email:
-                        data.user.email
+                    nickname:
+                        user.nickname
 
                 }
 
@@ -538,16 +420,17 @@ app.post(
         } catch (error) {
 
             console.error(
-                "❌ 로그인 서버 오류:",
+                "❌ 익명 사용자 오류:",
                 error
             );
+
 
             return res.status(500).json({
 
                 success: false,
 
                 error:
-                    "로그인 중 서버 오류가 발생했습니다."
+                    "사용자 정보를 불러오지 못했습니다."
 
             });
 
@@ -558,46 +441,95 @@ app.post(
 
 
 // ========================================
-// 현재 로그인 사용자
+// 익명 닉네임 변경
 // ========================================
-// 개인정보는 최소한으로 반환
+//
+// POST /api/user/nickname
+//
+// body:
+// {
+//     "nickname": "책읽는사람"
+// }
 // ========================================
 
-app.get(
-    "/api/auth/me",
-    async (req, res) => {
+app.post(
+    "/api/user/nickname",
+    (req, res) => {
 
-        const user =
-            await getCurrentUser(req);
+        const nickname =
+            String(
+                req.body.nickname || ""
+            ).trim();
 
 
-        if (!user) {
+        if (!nickname) {
 
-            return res.status(401).json({
+            return res.status(400).json({
 
                 success: false,
 
                 error:
-                    "로그인되어 있지 않습니다."
+                    "닉네임을 입력해주세요."
 
             });
 
         }
 
 
+        if (nickname.length < 2) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                error:
+                    "닉네임은 2자 이상 입력해주세요."
+
+            });
+
+        }
+
+
+        if (nickname.length > 20) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                error:
+                    "닉네임은 20자 이하로 입력해주세요."
+
+            });
+
+        }
+
+
+        const secure =
+            process.env.NODE_ENV === "production"
+                ? "; Secure"
+                : "";
+
+
+        res.setHeader(
+            "Set-Cookie",
+            [
+                "bookbang_anonymous_nickname=" +
+                    encodeURIComponent(
+                        nickname
+                    ) +
+                    "; Path=/" +
+                    "; SameSite=Lax" +
+                    "; Max-Age=31536000" +
+                    secure
+            ]
+        );
+
+
         return res.json({
 
             success: true,
 
-            user: {
-
-                id:
-                    user.id,
-
-                email:
-                    user.email
-
-            }
+            nickname: nickname
 
         });
 
@@ -606,18 +538,70 @@ app.get(
 
 
 // ========================================
-// 로그아웃
+// 익명 사용자 초기화
+// ========================================
+//
+// 필요할 때 새로운 익명 사용자로
+// 시작할 수 있도록 준비.
 // ========================================
 
 app.post(
-    "/api/auth/logout",
+    "/api/user/reset",
     (req, res) => {
 
-        clearAuthCookies(res);
+        const newId =
+            createAnonymousId();
+
+
+        const newNickname =
+            createAnonymousNickname();
+
+
+        const secure =
+            process.env.NODE_ENV === "production"
+                ? "; Secure"
+                : "";
+
+
+        res.setHeader(
+            "Set-Cookie",
+            [
+
+                "bookbang_anonymous_id=" +
+                    encodeURIComponent(
+                        newId
+                    ) +
+                    "; Path=/" +
+                    "; HttpOnly" +
+                    "; SameSite=Lax" +
+                    "; Max-Age=31536000" +
+                    secure,
+
+                "bookbang_anonymous_nickname=" +
+                    encodeURIComponent(
+                        newNickname
+                    ) +
+                    "; Path=/" +
+                    "; SameSite=Lax" +
+                    "; Max-Age=31536000" +
+                    secure
+
+            ]
+        );
+
 
         return res.json({
 
-            success: true
+            success: true,
+
+            user: {
+
+                id: newId,
+
+                nickname:
+                    newNickname
+
+            }
 
         });
 
@@ -627,6 +611,12 @@ app.post(
 
 // ========================================
 // 책 목록
+// ========================================
+//
+// GET /api/books
+//
+// DB:
+// books
 // ========================================
 
 app.get(
@@ -642,7 +632,12 @@ app.get(
                 await supabase
                     .from("books")
                     .select("*")
-                    .order("title");
+                    .order(
+                        "title",
+                        {
+                            ascending: true
+                        }
+                    );
 
 
             if (error) {
@@ -651,6 +646,7 @@ app.get(
                     "❌ 책 목록 오류:",
                     error.message
                 );
+
 
                 return res.status(500).json({
 
@@ -680,6 +676,7 @@ app.get(
                 error
             );
 
+
             return res.status(500).json({
 
                 success: false,
@@ -696,7 +693,125 @@ app.get(
 
 
 // ========================================
-// 메시지 목록
+// 특정 책
+// ========================================
+//
+// GET /api/books/:bookId
+// ========================================
+
+app.get(
+    "/api/books/:bookId",
+    async (req, res) => {
+
+        const bookId =
+            String(
+                req.params.bookId || ""
+            ).trim();
+
+
+        if (!bookId) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                error:
+                    "책 정보가 없습니다."
+
+            });
+
+        }
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .from("books")
+                    .select("*")
+                    .eq(
+                        "id",
+                        bookId
+                    )
+                    .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "❌ 책 조회 오류:",
+                    error.message
+                );
+
+
+                return res.status(500).json({
+
+                    success: false,
+
+                    error:
+                        "책 정보를 불러오지 못했습니다."
+
+                });
+
+            }
+
+
+            if (!data) {
+
+                return res.status(404).json({
+
+                    success: false,
+
+                    error:
+                        "책을 찾을 수 없습니다."
+
+                });
+
+            }
+
+
+            return res.json({
+
+                success: true,
+
+                book: data
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "❌ 책 조회 서버 오류:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                success: false,
+
+                error:
+                    "서버 오류가 발생했습니다."
+
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// 책별 메시지 조회
+// ========================================
+//
+// GET /api/messages/:bookId
+//
+// 로그인 필요 없음.
+// 완전 익명.
 // ========================================
 
 app.get(
@@ -731,7 +846,9 @@ app.get(
             } =
                 await supabase
                     .from("messages")
-                    .select("*")
+                    .select(
+                        "id, book_id, nickname, content, created_at"
+                    )
                     .eq(
                         "book_id",
                         bookId
@@ -751,6 +868,7 @@ app.get(
                     error.message
                 );
 
+
                 return res.status(500).json({
 
                     success: false,
@@ -763,38 +881,12 @@ app.get(
             }
 
 
-            // 기존 nickname 컬럼이 DB에 있어도
-            // 화면에는 익명으로만 표시
-
-            const anonymousMessages =
-                (data || []).map(
-                    message => ({
-
-                        id:
-                            message.id,
-
-                        book_id:
-                            message.book_id,
-
-                        content:
-                            message.content,
-
-                        created_at:
-                            message.created_at,
-
-                        nickname:
-                            "익명"
-
-                    })
-                );
-
-
             return res.json({
 
                 success: true,
 
                 messages:
-                    anonymousMessages
+                    data || []
 
             });
 
@@ -804,6 +896,7 @@ app.get(
                 "❌ 메시지 서버 오류:",
                 error
             );
+
 
             return res.status(500).json({
 
@@ -821,7 +914,20 @@ app.get(
 
 
 // ========================================
-// 메시지 저장
+// 메시지 작성
+// ========================================
+//
+// POST /api/messages
+//
+// body:
+//
+// {
+//     "book_id": "...",
+//     "content": "정말 좋은 책이네요."
+// }
+//
+// 익명 사용자는 로그인하지 않아도
+// 글을 작성할 수 있습니다.
 // ========================================
 
 app.post(
@@ -833,13 +939,12 @@ app.post(
                 req.body.book_id || ""
             ).trim();
 
+
         const content =
             String(
                 req.body.content || ""
             ).trim();
 
-
-        // 책 ID 검사
 
         if (!bookId) {
 
@@ -854,8 +959,6 @@ app.post(
 
         }
 
-
-        // 메시지 검사
 
         if (!content) {
 
@@ -887,51 +990,72 @@ app.post(
 
         try {
 
-            // 로그인 사용자 확인
+            /*
+             * 익명 사용자 확인
+             */
 
             const user =
-                await getCurrentUser(req);
+                getAnonymousUser(
+                    req,
+                    res
+                );
 
 
-            if (!user) {
+            /*
+             * 책이 실제로 존재하는지 확인
+             */
 
-                return res.status(401).json({
+            const {
+                data: book,
+                error: bookError
+            } =
+                await supabase
+                    .from("books")
+                    .select("id")
+                    .eq(
+                        "id",
+                        bookId
+                    )
+                    .maybeSingle();
+
+
+            if (bookError) {
+
+                console.error(
+                    "❌ 책 확인 오류:",
+                    bookError.message
+                );
+
+
+                return res.status(500).json({
 
                     success: false,
 
                     error:
-                        "로그인이 필요합니다."
+                        "책 정보를 확인하지 못했습니다."
 
                 });
 
             }
 
 
-            // ====================================
-            // 메시지 저장
-            // ====================================
-            // user_id가 있으면 user_id 사용
-            // 없다면 기존 DB 구조를 고려하여
-            // nickname = 익명으로 저장
-            // ====================================
+            if (!book) {
 
-            const insertData = {
+                return res.status(404).json({
 
-                book_id:
-                    bookId,
+                    success: false,
 
-                content:
-                    content
+                    error:
+                        "존재하지 않는 책입니다."
 
-            };
+                });
+
+            }
 
 
-            // 현재 messages 테이블에
-            // user_id 컬럼이 있다면 사용
-
-            insertData.user_id =
-                user.id;
-
+            /*
+             * 메시지 저장
+             */
 
             const {
                 data,
@@ -940,7 +1064,20 @@ app.post(
                 await supabase
                     .from("messages")
                     .insert([
-                        insertData
+
+                        {
+
+                            book_id:
+                                bookId,
+
+                            nickname:
+                                user.nickname,
+
+                            content:
+                                content
+
+                        }
+
                     ])
                     .select()
                     .single();
@@ -952,6 +1089,7 @@ app.post(
                     "❌ 메시지 저장 오류:",
                     error.message
                 );
+
 
                 return res.status(500).json({
 
@@ -969,24 +1107,7 @@ app.post(
 
                 success: true,
 
-                message: {
-
-                    id:
-                        data.id,
-
-                    book_id:
-                        data.book_id,
-
-                    content:
-                        data.content,
-
-                    created_at:
-                        data.created_at,
-
-                    nickname:
-                        "익명"
-
-                }
+                message: data
 
             });
 
@@ -996,6 +1117,7 @@ app.post(
                 "❌ 메시지 서버 오류:",
                 error
             );
+
 
             return res.status(500).json({
 
@@ -1013,6 +1135,159 @@ app.post(
 
 
 // ========================================
+// 책별 메시지 개수
+// ========================================
+//
+// GET /api/books/:bookId/message-count
+//
+// 나중에 책 카드에
+//
+// "이 책의 이야기 128개"
+//
+// 같은 정보를 표시할 때 사용.
+// ========================================
+
+app.get(
+    "/api/books/:bookId/message-count",
+    async (req, res) => {
+
+        const bookId =
+            String(
+                req.params.bookId || ""
+            ).trim();
+
+
+        if (!bookId) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                error:
+                    "책 정보가 없습니다."
+
+            });
+
+        }
+
+
+        try {
+
+            const {
+                count,
+                error
+            } =
+                await supabase
+                    .from("messages")
+                    .select(
+                        "id",
+                        {
+                            count: "exact",
+                            head: true
+                        }
+                    )
+                    .eq(
+                        "book_id",
+                        bookId
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    "❌ 메시지 개수 오류:",
+                    error.message
+                );
+
+
+                return res.status(500).json({
+
+                    success: false,
+
+                    error:
+                        "메시지 개수를 불러오지 못했습니다."
+
+                });
+
+            }
+
+
+            return res.json({
+
+                success: true,
+
+                count:
+                    count || 0
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "❌ 메시지 개수 서버 오류:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                success: false,
+
+                error:
+                    "서버 오류가 발생했습니다."
+
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// 앞으로 사용할 API 구조
+// ========================================
+//
+// 프로필
+//
+// GET    /api/profile
+// PATCH  /api/profile
+//
+// 친구
+//
+// GET    /api/friends
+// POST   /api/friends
+// DELETE /api/friends/:id
+//
+// 1:1 대화
+//
+// GET    /api/chats
+// GET    /api/chats/:id/messages
+// POST   /api/chats/:id/messages
+//
+// 별점
+//
+// GET    /api/books/:bookId/rating
+// POST   /api/books/:bookId/rating
+//
+// 리뷰
+//
+// GET    /api/books/:bookId/reviews
+// POST   /api/books/:bookId/reviews
+// DELETE /api/reviews/:id
+//
+// 읽은 책
+//
+// GET    /api/profile/books
+// POST   /api/profile/books
+// DELETE /api/profile/books/:bookId
+//
+// 지금은 실제 API를 만들지 않고
+// 구조만 미리 잡아둡니다.
+// ========================================
+
+
+// ========================================
 // 존재하지 않는 API
 // ========================================
 
@@ -1025,7 +1300,7 @@ app.use(
             success: false,
 
             error:
-                "API를 찾을 수 없습니다."
+                "요청한 API를 찾을 수 없습니다."
 
         });
 
@@ -1049,7 +1324,7 @@ app.use(
 
 
 // ========================================
-// 서버 오류 처리
+// 서버 오류
 // ========================================
 
 app.use(
@@ -1064,6 +1339,7 @@ app.use(
             "❌ 서버 오류:",
             error
         );
+
 
         return res.status(500).json({
 
@@ -1102,12 +1378,11 @@ app.listen(
         );
 
         console.log(
-            "🌐 Port:",
-            PORT
+            `🌐 http://localhost:${PORT}`
         );
 
         console.log(
-            "👤 익명 사용자 시스템"
+            "👤 익명 커뮤니티 모드"
         );
 
         console.log(
